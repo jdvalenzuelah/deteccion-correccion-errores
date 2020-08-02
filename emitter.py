@@ -5,9 +5,10 @@ import pickle
 
 class Emitter:
 
-    def __init__(self, ip: str, sock: int):
-        self.per_bit = 20
-        self.server_info = (ip, sock)
+    per_bit = 20
+
+    def __init__(self, ip: str, port: int):
+        self.server_info = (ip, port)
     
     def _to_binary_str(self, st):
         return ''.join(format(ord(x), 'b') for x in st)
@@ -36,18 +37,4 @@ class Emitter:
         after_noise = self._add_noise(before_noise)
         pickle_message = pickle.dumps(after_noise)
 
-        return self._send_message(pickle_message)
-
-if __name__ == "__main__":
-    emitter = Emitter('127.0.0.1', 65432)
-    res = emitter.send_message('Hello World')
-    #print(res)
-    
-    message_pickle = pickle.loads(res)
-    print(message_pickle)
-
-    h = message_pickle.tobytes().decode('utf-8')
-    print(h)
-
-
-
+        return self._send_message(pickle_message, False)
