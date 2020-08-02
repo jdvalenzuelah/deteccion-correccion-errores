@@ -13,7 +13,7 @@ class Emitter:
         return ''.join(format(ord(x), 'b') for x in st)
     
     def _add_noise(self, byte_array):
-        choices = [bytearray('1', encoding = "utf-8"), bytearray('0', encoding = "utf-8")]
+        choices = [bitarray('1'), bitarray('0')]
         noise = round(len(byte_array) / self.per_bit)
         for i in range(noise):
             pos = random.randint(0, len(byte_array))
@@ -21,9 +21,7 @@ class Emitter:
         return byte_array
     
     def _verify_message(self, message: str):
-        return bytearray( self._to_binary_str( message ), encoding = "utf-8" )
-
-
+        return bitarray( self._to_binary_str( message ))
 
     def _send_message(self, message, wait_response: bool = True):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -37,10 +35,19 @@ class Emitter:
         before_noise = self._verify_message(message)
         after_noise = self._add_noise(before_noise)
         pickle_message = pickle.dumps(after_noise)
-        return self._send_message(pickle_message)
 
+        return self._send_message(pickle_message)
 
 if __name__ == "__main__":
     emitter = Emitter('127.0.0.1', 65432)
     res = emitter.send_message('Hello World')
-    print(res)
+    #print(res)
+    
+    message_pickle = pickle.loads(res)
+    print(message_pickle)
+
+    h = message_pickle.tobytes().decode('utf-8')
+    print(h)
+
+
+
