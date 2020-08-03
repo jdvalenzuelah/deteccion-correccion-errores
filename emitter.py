@@ -1,11 +1,13 @@
 from bitarray import bitarray
+from fletcher import FletcherChecksum
 import socket
 import random
 import pickle
 
 class Emitter:
 
-    per_bit = 20
+    per_bit = 100
+    checksum = FletcherChecksum()
 
     def __init__(self, ip: str, port: int):
         self.server_info = (ip, port)
@@ -16,13 +18,16 @@ class Emitter:
     def _add_noise(self, byte_array):
         choices = [bitarray('1'), bitarray('0')]
         noise = round(len(byte_array) / self.per_bit)
-        for i in range(noise):
+        for i in range(noise if noise else 1):
             pos = random.randint(0, len(byte_array))
             byte_array = byte_array[0:pos] + random.choice(choices) + byte_array[pos:]
         return byte_array
     
     def _verify_message(self, message: str):
-        return bitarray( self._to_binary_str( message ))
+        message = bitarray( self._to_binary_str( message ))
+        c = self.checksum.generate_checksum(message.tobytes())
+        checksum = format(c, '016b')
+        return message + bitarray(checksum)
 
     def _send_message(self, message, wait_response: bool = True):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
