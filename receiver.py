@@ -7,8 +7,7 @@ import pickle
 
 class Receiver:
 
-    checksum = FletcherChecksum()
-    correction = Hamming()
+    hamming = Hamming()
 
     def __init__(self, ip: str, port: int):
         self.server_info = (ip, port)
@@ -22,25 +21,12 @@ class Receiver:
 
     def _verify_message(self, bit_array):
         # last 16 bits checksum
-        msg_checksum = self.checksum.generate_checksum(bit_array[0:-16])
-        incoming_checksum = int(self._to_binary_str(bit_array[-16:]), 2)
-        if msg_checksum == incoming_checksum:
-            return self._to_binary_str(bit_array)
-        else:
-            pass # need to correct errors
-
-    def _hamming(self, bit_array):
-        # side of bit_array
-        n = len(bit_array)
-        #redudant bits
-        rb = self.correction.calculoBits(n)
-        #position redudant bits
-        posrb = self.correction.posRedundante(bit_array, rb)
-        #parity bits
-        parb = self.correction.calculoParidad(posrb, rb)
-        #correction of bits
-        good_bits = self.correction.deteccion(parb, rb)
-
+        bin_message = self._to_binary_str(bit_array)
+        r = self.hamming.calc_redundant_bits(len(bin_message))
+        error = self.hamming.detect(bin_message, r)
+        bin_message = self.hamming.correct(bin_message, error)
+        return bin_message
+        
     def listen(self, send_response: bool = False):
         req_str = ''
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -55,5 +41,4 @@ class Receiver:
                     req_str = self._verify_message(self._load_req(req))
                     if send_response:
                         conn.sendall(req)
-                    #req_str = self._hamming(self._load_req(req))
         return req_str
