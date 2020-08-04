@@ -43,11 +43,6 @@ class Hamming:
 			resultado = resultado + value*(10**i)
 
 		return int(str(resultado), 2)
-	
-	def correct(self, arr, pos):
-		print(f'arr to correct {arr}')
-		print(f'post to correct {pos}')
-		return arr[0:pos] + '1' if arr[pos] == '0' else '0' + arr[pos:]
 
 	def correct(self, arr, pos):
 		if(pos > len(arr)):
