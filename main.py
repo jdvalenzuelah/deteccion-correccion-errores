@@ -2,8 +2,15 @@
 
 import sys
 import threading
+import time
 from receiver import Receiver
 from emitter import Emitter
+
+def write_log(log):
+    with open("without_noise.csv", "a") as myfile:
+        myfile.write(str(log) + "\n")
+
+
 
 def start_receiver(ip, port):
     receiver = Receiver(ip, int(port))
@@ -11,8 +18,11 @@ def start_receiver(ip, port):
     print(f'Received message: {req}')
 
 def send_message(ip, port, message):
+    start = time.time()
     emitter = Emitter(ip, int(port))
     emitter.send_message(message)
+    end = time.time()
+    write_log(end - start)
 
 
 if __name__ == "__main__":
